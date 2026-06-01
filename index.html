@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Meal Prep — Mon to Fri</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --dark: #1A1A14;
+    --olive: #4A5240;
+    --rust: #C4622D;
+    --sage: #8A9E7A;
+    --warm: #E8DCC8;
+    --light-text: #6B6458;
+    --card-bg: #FDFAF5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--cream);
+    color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: clamp(2rem, 8vw, 5rem) clamp(1rem, 5vw, 3rem);
+    position: relative;
+    background: var(--dark);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, #2E3222 0%, #1A1A14 100%);
+  }
+
+  .hero-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%);
+    background-size: 20px 20px;
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 700px; width: 100%; }
+
+  .hero-eyebrow {
+    font-size: clamp(10px, 2.5vw, 12px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 1.25rem;
+    font-weight: 500;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 10vw, 6rem);
+    color: var(--cream);
+    line-height: 1.05;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 em { color: var(--rust); font-style: italic; }
+
+  .hero-sub {
+    font-size: clamp(13px, 3.5vw, 15px);
+    color: #9A9080;
+    max-width: 460px;
+    margin: 0 auto 2rem;
+    line-height: 1.8;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: clamp(1rem, 4vw, 2rem);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    color: var(--cream);
+    display: block;
+  }
+  .stat-label { font-size: clamp(10px, 2.5vw, 12px); color: #6B6060; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .scroll-hint {
+    font-size: 12px;
+    color: #4A4438;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--dark);
+    border-bottom: 1px solid #2A2A20;
+    padding: 0 max(1rem, env(safe-area-inset-left));
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav::-webkit-scrollbar { display: none; }
+
+  .nav-btn {
+    padding: 0.9rem clamp(0.75rem, 3vw, 1.5rem);
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(12px, 3vw, 13px);
+    font-weight: 400;
+    color: #6B6060;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-btn:hover { color: var(--cream); }
+  .nav-btn.active { color: var(--rust); border-bottom-color: var(--rust); }
+
+  /* ── MAIN ── */
+  main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
+  }
+
+  .day-section { display: none; }
+  .day-section.active { display: block; }
+
+  .day-header {
+    margin-bottom: clamp(1.5rem, 5vw, 3rem);
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--warm);
+  }
+
+  .day-tag {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+  }
+
+  .day-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 6vw, 3.5rem);
+    color: var(--dark);
+    line-height: 1.1;
+    margin-bottom: 0.75rem;
+  }
+
+  .day-summary {
+    font-size: clamp(12px, 3vw, 14px);
+    color: var(--light-text);
+    display: flex;
+    gap: clamp(0.75rem, 3vw, 1.5rem);
+    flex-wrap: wrap;
+  }
+
+  .day-summary span { display: flex; align-items: center; gap: 5px; }
+
+  /* ── MEAL BLOCK ── */
+  .meal-block {
+    margin-bottom: clamp(2.5rem, 7vw, 4rem);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .meal-block.visible { opacity: 1; transform: translateY(0); }
+
+  .meal-type-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .label-breakfast { background: #FFF3E0; color: #B85C00; }
+  .label-lunch { background: #E8F5E0; color: #2E6010; }
+  .label-dinner { background: #EDE8F5; color: #4A2D8A; }
+
+  .meal-card {
+    background: var(--card-bg);
+    border: 1px solid var(--warm);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .meal-card-top {
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border-bottom: 1px solid var(--warm);
+  }
+
+  .meal-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 4.5vw, 1.8rem);
+    color: var(--dark);
+    margin-bottom: 0.4rem;
+    line-height: 1.2;
+  }
+
+  .meal-tagline {
+    font-size: clamp(13px, 3vw, 14px);
+    color: var(--light-text);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .meal-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-size: clamp(11px, 2.5vw, 12px);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    background: var(--warm);
+    color: var(--olive);
+  }
+  .pill-protein { background: #E1F5EE; color: #085041; }
+  .pill-time { background: #FFF3E0; color: #7A3A00; }
+  .pill-cost { background: #EAF3DE; color: #2E5A0A; }
+  .pill-method { background: #EEEDFE; color: #3C3489; }
+
+  /* ── RECIPE BODY: side-by-side on tablet+, stacked on mobile ── */
+  .recipe-body {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 0;
+  }
+
+  .ingredients-col {
+    padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1rem, 3vw, 2rem);
+    border-right: 1px solid var(--warm);
+    background: #F9F5EE;
+    min-width: 0;
+  }
+
+  .steps-col {
+    padding: clamp(1.25rem, 3vw, 1.75rem) clamp(1rem, 3vw, 2rem);
+    min-width: 0;
+  }
+
+  /* Stack on phones */
+  @media (max-width: 600px) {
+    .recipe-body {
+      grid-template-columns: 1fr;
+    }
+    .ingredients-col {
+      border-right: none;
+      border-bottom: 1px solid var(--warm);
+    }
+  }
+
+  .col-heading {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--light-text);
+    margin-bottom: 0.75rem;
+  }
+
+  .ingredient-list { list-style: none; }
+
+  .ingredient-list li {
+    font-size: clamp(13px, 3vw, 14px);
+    color: var(--dark);
+    padding: 6px 0;
+    border-bottom: 1px solid #EDE8DC;
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: baseline;
+  }
+
+  .ingredient-list li:last-child { border-bottom: none; }
+
+  .ing-name { color: var(--dark); flex: 1; }
+  .ing-amount { color: var(--light-text); font-size: clamp(12px, 2.5vw, 13px); white-space: nowrap; flex-shrink: 0; }
+
+  /* ── STORE BUTTONS ── */
+  .store-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 1.25rem;
+  }
+  .store-label {
+    font-size: 11px;
+    color: var(--light-text);
+    font-weight: 500;
+    white-space: nowrap;
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .store-btn {
+    display: inline-flex;
+    align-items: center;
+    font-size: clamp(11px, 2.5vw, 12px);
+    font-weight: 500;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    flex: 1;
+    justify-content: center;
+    min-width: 80px;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn-coles { background: #E8F0FF; color: #1A3A8A; border-color: #B8CCEE; }
+  .btn-coles:hover, .btn-coles:active { background: #1A3A8A; color: white; }
+  .btn-woolworths { background: #E8F5E9; color: #1B5E20; border-color: #A5D6A7; }
+  .btn-woolworths:hover, .btn-woolworths:active { background: #1B5E20; color: white; }
+  .btn-aldi { background: #FFF3E0; color: #B45309; border-color: #FDBA74; }
+  .btn-aldi:hover, .btn-aldi:active { background: #B45309; color: white; }
+
+  /* ── STEPS ── */
+  .steps-list { list-style: none; counter-reset: steps; }
+
+  .steps-list li {
+    counter-increment: steps;
+    padding: 0 0 1.1rem 2.25rem;
+    position: relative;
+    font-size: clamp(13px, 3vw, 14px);
+    color: var(--dark);
+    line-height: 1.7;
+    border-left: 2px solid var(--warm);
+    margin-left: 0.75rem;
+  }
+
+  .steps-list li:last-child { border-left-color: transparent; padding-bottom: 0; }
+
+  .steps-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: -1rem;
+    top: 2px;
+    width: 26px;
+    height: 26px;
+    background: var(--rust);
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .steps-list li strong { color: var(--olive); font-weight: 500; }
+
+  .tip-box {
+    margin-top: 1rem;
+    background: #F0F5E8;
+    border-left: 3px solid var(--sage);
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    font-size: clamp(12px, 3vw, 13px);
+    color: var(--olive);
+    line-height: 1.6;
+  }
+  .tip-box strong { font-weight: 500; }
+
+  /* ── SUNDAY SECTION ── */
+  .sunday-section {
+    background: var(--dark);
+    border-radius: 16px;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    margin: clamp(2rem, 6vw, 4rem) 0;
+    color: var(--cream);
+  }
+
+  .sunday-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 4vw, 1.6rem);
+    margin-bottom: 0.4rem;
+    color: var(--cream);
+  }
+
+  .sunday-section p { font-size: clamp(13px, 3vw, 14px); color: #9A9080; margin-bottom: 1.25rem; }
+
+  .sunday-steps { list-style: none; }
+  .sunday-steps li {
+    font-size: clamp(13px, 3vw, 14px);
+    color: #C8C0B0;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #2A2A20;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    line-height: 1.6;
+  }
+  .sunday-steps li:last-child { border-bottom: none; }
+  .sunday-num {
+    min-width: 24px;
+    height: 24px;
+    background: var(--rust);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 4vw, 2rem);
+    background: var(--dark);
+    color: #4A4438;
+    font-size: clamp(12px, 3vw, 13px);
+  }
+  footer span { color: var(--rust); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-content > * { animation: fadeUp 0.8s ease both; }
+  .hero-eyebrow { animation-delay: 0.1s; }
+  .hero h1 { animation-delay: 0.25s; }
+  .hero-sub { animation-delay: 0.4s; }
+  .stats-row { animation-delay: 0.55s; }
+  .scroll-hint { animation-delay: 0.7s; }
+
+  /* ── TABLET TWEAKS (601px – 860px) ── */
+  @media (min-width: 601px) and (max-width: 860px) {
+    .recipe-body { grid-template-columns: 1fr 1.3fr; }
+    main { padding: 2.5rem 1.5rem; }
+  }
+
+  /* ── LARGE DESKTOP ── */
+  @media (min-width: 1200px) {
+    main { padding: 4rem 2rem; }
+    .recipe-body { grid-template-columns: 1fr 1.8fr; }
+  }
+
+  /* ── SAFE AREAS (notch phones) ── */
+  @supports (padding: max(0px)) {
+    nav {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+    main {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">High Protein · Airfryer & Stovetop · Under $50</p>
+    <h1>5 Days of<br><em>Real Food</em></h1>
+    <p class="hero-sub">Full meal prep plan — Monday to Friday. Breakfast, lunch and dinner. Every recipe in full detail, every ingredient linked to Coles.</p>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-num">15</span><span class="stat-label">Recipes</span></div>
+      <div class="stat"><span class="stat-num">~40g</span><span class="stat-label">Protein avg</span></div>
+      <div class="stat"><span class="stat-num">&lt;55min</span><span class="stat-label">Sunday prep</span></div>
+      <div class="stat"><span class="stat-num">$47</span><span class="stat-label">Total cost</span></div>
+    </div>
+    <p class="scroll-hint">↓ scroll to start cooking</p>
+  </div>
+</section>
+
+<nav id="mainNav">
+  <button class="nav-btn active" onclick="showDay('monday')">Monday</button>
+  <button class="nav-btn" onclick="showDay('tuesday')">Tuesday</button>
+  <button class="nav-btn" onclick="showDay('wednesday')">Wednesday</button>
+  <button class="nav-btn" onclick="showDay('thursday')">Thursday</button>
+  <button class="nav-btn" onclick="showDay('friday')">Friday</button>
+  <button class="nav-btn" onclick="showDay('sunday')">Sunday Prep</button>
+</nav>
+
+<main>
+
+<!-- MONDAY -->
+<div class="day-section active" id="monday">
+  <div class="day-header">
+    <p class="day-tag">Day 01</p>
+    <h2>Monday</h2>
+    <div class="day-summary">
+      <span>🔥 ~122g protein total</span>
+      <span>💰 ~$11.50</span>
+      <span>⏱ All pre-prepped Sunday</span>
+    </div>
+  </div>
+
+  <!-- MONDAY BREAKFAST -->
+  <div class="meal-block">
+    <div class="meal-type-label label-breakfast">🌅 Breakfast</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">PB Banana Protein Oats</h3>
+        <p class="meal-tagline">Creamy rolled oats loaded with peanut butter, banana and a scoop of protein powder. Made in one big batch Sunday, portioned into containers — just microwave and eat.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~35g protein</span>
+          <span class="pill pill-time">⏱ 3 min microwave</span>
+          <span class="pill pill-cost">💰 ~$1.80</span>
+          <span class="pill pill-method">🍳 Stovetop</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Rolled oats</span><span class="ing-amount">80g (1 cup)</span></li>
+            <li><span class="ing-name">Milk (full cream)</span><span class="ing-amount">250ml</span></li>
+            <li><span class="ing-name">Peanut butter</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Protein powder (vanilla)</span><span class="ing-amount">1 scoop (30g)</span></li>
+            <li><span class="ing-name">Banana</span><span class="ing-amount">1 medium, sliced</span></li>
+            <li><span class="ing-name">Honey</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Pinch of salt</span><span class="ing-amount">tiny pinch</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=rolled+oats" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=rolled+oats" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=rolled+oats" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday — make 5 serves)</p>
+          <ol class="steps-list">
+            <li><strong>Measure oats:</strong> Add 400g oats and 1.25 litres of milk to a large pot. Stir together so oats are submerged.</li>
+            <li><strong>Cook on medium heat:</strong> Bring to a gentle simmer, stirring every minute. Cook for 5–7 minutes until thick and creamy. Don't let it boil hard — it'll stick.</li>
+            <li><strong>Add flavour:</strong> Remove from heat. Stir in 10 tbsp peanut butter, a pinch of salt, and all 5 scoops of protein powder. Mix well until smooth.</li>
+            <li><strong>Portion:</strong> Divide evenly into 3 containers (Mon, Wed, Fri). Let cool 10 minutes before sealing.</li>
+            <li><strong>Toppings stay fresh:</strong> Store banana and honey separately. Slice banana fresh each morning — takes 20 seconds.</li>
+            <li><strong>Morning reheat:</strong> Microwave container 90 seconds, stir. If too thick, add a splash of milk. Top with banana slices and drizzle of honey.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> The oats thicken overnight in the fridge — this is normal. A splash of milk when reheating brings them back to perfect consistency.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONDAY LUNCH -->
+  <div class="meal-block">
+    <div class="meal-type-label label-lunch">🥙 Lunch</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Airfryer Chicken Rice Bowl</h3>
+        <p class="meal-tagline">Juicy garlic-seasoned airfryer chicken breast sliced over steamed jasmine rice with soy sauce, cucumber and carrot. The foundation of the whole week's lunches — nail the chicken Sunday and you're set.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~45g protein</span>
+          <span class="pill pill-time">⏱ 3 min microwave</span>
+          <span class="pill pill-cost">💰 ~$4.20</span>
+          <span class="pill pill-method">✈️ Airfryer</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Chicken breast</span><span class="ing-amount">180g</span></li>
+            <li><span class="ing-name">Jasmine rice (dry)</span><span class="ing-amount">80g (¾ cup)</span></li>
+            <li><span class="ing-name">Soy sauce</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Garlic powder</span><span class="ing-amount">½ tsp</span></li>
+            <li><span class="ing-name">Olive oil</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Salt & pepper</span><span class="ing-amount">to taste</span></li>
+            <li><span class="ing-name">Cucumber</span><span class="ing-amount">¼, sliced</span></li>
+            <li><span class="ing-name">Carrot</span><span class="ing-amount">½, grated</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=chicken+breast" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=chicken+breast" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=chicken+breast" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday — make 4 serves of chicken)</p>
+          <ol class="steps-list">
+            <li><strong>Prep chicken:</strong> Pat 4 chicken breasts dry with paper towel. This is important — dry chicken crisps up, wet chicken steams. Rub each one with olive oil, garlic powder, salt and pepper on both sides.</li>
+            <li><strong>Airfryer setup:</strong> Preheat airfryer to 200°C for 3 minutes. Don't skip this — a cold airfryer gives uneven results.</li>
+            <li><strong>Cook chicken:</strong> Place breasts in airfryer basket without overlapping. Cook at 200°C for 18 minutes, flipping at the 9-minute mark. Thicker breasts may need 20 minutes — slice into the thickest part to check it's white all the way through, no pink.</li>
+            <li><strong>Rest the chicken:</strong> Remove and let rest on a board for 5 minutes before slicing. This keeps the juices inside. Slice into thick strips.</li>
+            <li><strong>Cook rice:</strong> While chicken rests, rinse 400g dry rice until water runs clear. Add to pot with 640ml cold water. Bring to boil, then put lid on, turn to lowest heat, cook 12 minutes. Remove from heat, leave lid on 5 more minutes. Fluff with fork.</li>
+            <li><strong>Portion bowls:</strong> Divide rice into 4 containers. Add sliced chicken on top. Veg goes in a separate small bag or section so it stays crisp. Pack soy sauce in a tiny container on the side.</li>
+            <li><strong>To eat:</strong> Microwave rice + chicken 3 minutes. Add raw cucumber and carrot on top, drizzle soy sauce. Done.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> If your airfryer runs hot, check at 15 minutes. Every airfryer is different — use a meat thermometer if you have one (internal temp should reach 75°C).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MONDAY DINNER -->
+  <div class="meal-block">
+    <div class="meal-type-label label-dinner">🍽️ Dinner</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Beef Bolognese Pasta</h3>
+        <p class="meal-tagline">Rich, garlicky beef mince simmered with canned tomatoes and Italian herbs. Served over penne with a sprinkle of parmesan. The most classic weeknight dinner — done in one pot.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~42g protein</span>
+          <span class="pill pill-time">⏱ 5 min reheat</span>
+          <span class="pill pill-cost">💰 ~$5.00</span>
+          <span class="pill pill-method">🍳 Stovetop</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Beef mince (500g pack)</span><span class="ing-amount">180g</span></li>
+            <li><span class="ing-name">Penne pasta</span><span class="ing-amount">90g dry</span></li>
+            <li><span class="ing-name">Canned diced tomatoes</span><span class="ing-amount">½ can (200g)</span></li>
+            <li><span class="ing-name">Garlic (fresh or powder)</span><span class="ing-amount">2 cloves / 1 tsp</span></li>
+            <li><span class="ing-name">Brown onion</span><span class="ing-amount">½, diced</span></li>
+            <li><span class="ing-name">Tomato paste</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Italian herbs (dried)</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Olive oil</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Salt & pepper</span><span class="ing-amount">to taste</span></li>
+            <li><span class="ing-name">Parmesan (optional)</span><span class="ing-amount">small sprinkle</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=beef+mince" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=beef+mince" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=beef+mince" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday — makes 2 serves)</p>
+          <ol class="steps-list">
+            <li><strong>Boil pasta:</strong> Bring a large pot of salted water to boil. Add pasta, cook 10–11 minutes until just tender (al dente — not mushy). Drain and set aside. Toss with a tiny bit of olive oil so it doesn't stick.</li>
+            <li><strong>Cook onion and garlic:</strong> Heat oil in a frypan on medium-high. Add diced onion, stir for 3 minutes until soft and slightly golden. Add crushed garlic, stir 30 seconds until fragrant.</li>
+            <li><strong>Brown the mince:</strong> Add beef mince. Break it up with a wooden spoon into small pieces as it cooks. Cook 5–6 minutes until completely browned — no pink bits. Don't stir too much; let it get some colour on the bottom.</li>
+            <li><strong>Add tomatoes:</strong> Add tomato paste, diced tomatoes, Italian herbs, salt and pepper. Stir well to combine everything.</li>
+            <li><strong>Simmer:</strong> Turn heat to low-medium. Let the sauce bubble gently for 10 minutes, stirring occasionally. It should thicken slightly.</li>
+            <li><strong>Portion:</strong> Let cool slightly. Portion pasta into 2 containers. Spoon bolognese sauce over pasta. Parmesan in a tiny separate bag if using.</li>
+            <li><strong>To eat Monday:</strong> Microwave 3–4 minutes, stirring halfway. Sprinkle parmesan on top.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Don't use lean mince — regular beef mince (15–20% fat) gives way more flavour. The fat renders into the sauce and makes it rich without needing cream.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TUESDAY -->
+<div class="day-section" id="tuesday">
+  <div class="day-header">
+    <p class="day-tag">Day 02</p>
+    <h2>Tuesday</h2>
+    <div class="day-summary">
+      <span>🔥 ~124g protein total</span>
+      <span>💰 ~$11.30</span>
+      <span>⏱ Kotlety cook fresh (12 min)</span>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-breakfast">🌅 Breakfast</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Berry Protein Smoothie</h3>
+        <p class="meal-tagline">Frozen mixed berries, banana, peanut butter, honey and protein powder blended with milk. Pre-bag everything Sunday night — Tuesday morning is literally 45 seconds of blending.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~38g protein</span>
+          <span class="pill pill-time">⏱ 45 sec blend</span>
+          <span class="pill pill-cost">💰 ~$2.00</span>
+          <span class="pill pill-method">🥤 Blender</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Frozen mixed berries</span><span class="ing-amount">1 cup (150g)</span></li>
+            <li><span class="ing-name">Banana</span><span class="ing-amount">1 medium</span></li>
+            <li><span class="ing-name">Peanut butter</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Protein powder (vanilla)</span><span class="ing-amount">1 scoop (30g)</span></li>
+            <li><span class="ing-name">Honey</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">300ml</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=frozen+mixed+berries" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=frozen+mixed+berries" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=frozen+mixed+berries" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Sunday night prep:</strong> Put frozen berries, banana (peeled and broken in half), and peanut butter into a ziplock bag. Seal and put back in freezer. Put protein powder + honey in a separate small container.</li>
+            <li><strong>Tuesday morning:</strong> Dump the frozen bag contents into the blender. Add milk. Add protein powder and honey.</li>
+            <li><strong>Blend:</strong> Blend on high for 45–60 seconds until completely smooth. If it's too thick, add a splash more milk.</li>
+            <li><strong>Drink:</strong> Pour into a big cup or drink straight from the blender. Done — no dishes except the blender cup.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Frozen berries make it thick and cold — no need for ice. If you don't have a blender, mash everything in a bowl and eat as a smoothie bowl with a spoon. Still delicious.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-lunch">🥙 Lunch</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Chicken & Hummus Wrap</h3>
+        <p class="meal-tagline">Sunday airfryer chicken sliced into strips, loaded into a flatbread with hummus, roasted capsicum and baby spinach. Roll it up, wrap in foil, microwave before school.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~40g protein</span>
+          <span class="pill pill-time">⏱ 90 sec microwave</span>
+          <span class="pill pill-cost">💰 ~$3.80</span>
+          <span class="pill pill-method">🌯 Assemble</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Mountain bread / flatbread</span><span class="ing-amount">1 large</span></li>
+            <li><span class="ing-name">Airfryer chicken (from Sunday)</span><span class="ing-amount">150g sliced</span></li>
+            <li><span class="ing-name">Hummus</span><span class="ing-amount">3 tbsp</span></li>
+            <li><span class="ing-name">Roasted capsicum (jar)</span><span class="ing-amount">3–4 strips</span></li>
+            <li><span class="ing-name">Baby spinach</span><span class="ing-amount">handful</span></li>
+            <li><span class="ing-name">Salt & pepper</span><span class="ing-amount">to taste</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=mountain+bread+wraps" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=mountain+bread+wraps" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=mountain+bread+wraps" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Lay flatbread flat:</strong> Place your flatbread on a sheet of foil roughly the same size.</li>
+            <li><strong>Spread hummus:</strong> Spread 3 tablespoons of hummus evenly across the centre of the wrap, leaving 3cm clear on each edge.</li>
+            <li><strong>Add fillings:</strong> Layer spinach first (it protects the bread from getting soggy). Then add sliced chicken strips. Then roasted capsicum strips on top. Season with salt and pepper.</li>
+            <li><strong>Roll tightly:</strong> Fold in the sides first (2cm each), then roll from the bottom upward, keeping it tight. Don't overfill or it'll split.</li>
+            <li><strong>Wrap in foil:</strong> Wrap the whole thing snugly in the foil. Store in fridge overnight or prep morning-of.</li>
+            <li><strong>Reheat:</strong> Microwave in foil 90 seconds. The steam inside the foil heats it through evenly. Squeeze to check it's hot in the centre.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Don't add tomato or cucumber inside — they go soggy overnight. Pack fresh veg separately if you want it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-dinner">🍽️ Dinner</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Kotlety — Airfryer Russian Meat Patties</h3>
+        <p class="meal-tagline">Juicy Russian-style beef patties seasoned with garlic, onion and herbs, cooked golden in the airfryer in 12 minutes. Served with creamy mashed potato. This is the Russian classic — shaped Sunday, cooked fresh Tuesday.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~46g protein</span>
+          <span class="pill pill-time">⏱ 12 min airfryer</span>
+          <span class="pill pill-cost">💰 ~$5.50</span>
+          <span class="pill pill-method">✈️ Airfryer + 🍳 Stove</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (2 serves)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Beef mince</span><span class="ing-amount">350g</span></li>
+            <li><span class="ing-name">Breadcrumbs</span><span class="ing-amount">3 tbsp</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Brown onion</span><span class="ing-amount">½, grated</span></li>
+            <li><span class="ing-name">Garlic powder</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Salt</span><span class="ing-amount">¾ tsp</span></li>
+            <li><span class="ing-name">Black pepper</span><span class="ing-amount">½ tsp</span></li>
+            <li><span class="ing-name">Potatoes</span><span class="ing-amount">3 medium</span></li>
+            <li><span class="ing-name">Butter</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Milk (for mash)</span><span class="ing-amount">splash</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=beef+mince" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=beef+mince" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=beef+mince" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Sunday — make the mix:</strong> Combine beef mince, breadcrumbs, milk, grated onion, garlic powder, salt and pepper in a bowl. Mix well with your hands for 1–2 minutes — this makes them hold together and stay juicy. The milk-soaked breadcrumbs are the secret to Russian kotlety being moist, not dry.</li>
+            <li><strong>Shape patties:</strong> Wet your hands slightly. Shape into oval patties about 10cm long and 2cm thick — like a fat oval burger. Makes about 6 patties. Place on a lined tray, cover with cling wrap and refrigerate.</li>
+            <li><strong>Tuesday — preheat airfryer:</strong> Preheat airfryer to 200°C for 3 minutes. Spray basket lightly with oil.</li>
+            <li><strong>Cook kotlety:</strong> Add patties to basket in a single layer. Cook 12 minutes, flipping at 6 minutes. They should be golden brown outside and fully cooked through — slice one to check if needed.</li>
+            <li><strong>Mash simultaneously:</strong> While airfryer runs, peel and cube potatoes. Boil in salted water 12 minutes until fork-tender. Drain fully. Mash with butter and a splash of milk until smooth. Season with salt.</li>
+            <li><strong>Serve:</strong> Plate kotlety alongside mash. Add a spoonful of sour cream on the side if you like — totally traditional.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Grating the onion (not dicing) distributes it through every bite and keeps patties moist. If you dice it, you get big chunks. Grated is the Russian way.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEDNESDAY -->
+<div class="day-section" id="wednesday">
+  <div class="day-header">
+    <p class="day-tag">Day 03</p>
+    <h2>Wednesday</h2>
+    <div class="day-summary">
+      <span>🔥 ~117g protein total</span>
+      <span>💰 ~$10.50</span>
+      <span>⏱ All pre-prepped</span>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-breakfast">🌅 Breakfast</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Honey Oats with Banana</h3>
+        <p class="meal-tagline">The Sunday batch oats again — this time with extra honey swirled through and fresh banana on top. Midweek simplicity that keeps you going all morning.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~33g protein</span>
+          <span class="pill pill-time">⏱ 90 sec microwave</span>
+          <span class="pill pill-cost">💰 ~$1.50</span>
+          <span class="pill pill-method">🥣 Microwave</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Batch oats (from Sunday)</span><span class="ing-amount">1 portion</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">splash to loosen</span></li>
+            <li><span class="ing-name">Banana</span><span class="ing-amount">1, sliced</span></li>
+            <li><span class="ing-name">Honey</span><span class="ing-amount">1–2 tsp</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=honey+squeeze" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=honey+squeeze" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=honey+squeeze" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Get oats from fridge:</strong> Open your Sunday-prepped oat container. Add a splash of milk (about 2–3 tablespoons) to loosen — they'll have thickened overnight.</li>
+            <li><strong>Microwave:</strong> Microwave uncovered for 90 seconds. Stir halfway through to heat evenly.</li>
+            <li><strong>Top and eat:</strong> Slice banana over the top, drizzle honey. Eat straight from the container — less washing up.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Wednesday is the simplest breakfast of the week on purpose — mid-week you want zero friction in the morning.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-lunch">🥙 Lunch</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Beef Burrito Bowl</h3>
+        <p class="meal-tagline">Mexican-spiced beef mince over jasmine rice with corn, diced tomato, sour cream and a squeeze of lime. Bold, filling and exactly what Wednesday calls for.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~44g protein</span>
+          <span class="pill pill-time">⏱ 3 min microwave</span>
+          <span class="pill pill-cost">💰 ~$4.20</span>
+          <span class="pill pill-method">🍳 Stovetop (Sunday)</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Beef mince</span><span class="ing-amount">180g</span></li>
+            <li><span class="ing-name">Taco seasoning packet</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Jasmine rice (cooked)</span><span class="ing-amount">150g</span></li>
+            <li><span class="ing-name">Canned corn kernels</span><span class="ing-amount">3 tbsp, drained</span></li>
+            <li><span class="ing-name">Diced tomato</span><span class="ing-amount">½ tomato</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Lime juice</span><span class="ing-amount">squeeze</span></li>
+            <li><span class="ing-name">Water</span><span class="ing-amount">3 tbsp</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=taco+seasoning" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=taco+seasoning" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=taco+seasoning" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday prep)</p>
+          <ol class="steps-list">
+            <li><strong>Brown mince:</strong> Heat a frypan on high. Add beef mince, break apart, cook 5 minutes until browned all over. Drain excess fat if there's a lot.</li>
+            <li><strong>Season:</strong> Add taco seasoning and 3 tablespoons of water. Stir and cook 2 minutes until the water cooks off and meat is coated in spice mix. It should smell incredible.</li>
+            <li><strong>Portion:</strong> Spoon mince over pre-cooked rice in a container. Add corn. Keep diced tomato and sour cream in separate small containers — they go on cold when you eat it.</li>
+            <li><strong>Wednesday morning:</strong> Microwave rice + mince + corn 3 minutes. Remove lid, add cold tomato, sour cream on top and squeeze of lime. Eat immediately.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Sour cream goes on cold after microwaving — hot sour cream separates and looks gross. Keep it separate and add last second.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-dinner">🍽️ Dinner</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Solyanka Soup</h3>
+        <p class="meal-tagline">The famous Russian sour-salty soup — beef strips, smoked kransky sausage, pickled cucumbers, olives and tomato paste in a rich broth. Made fully Sunday, it tastes even better Wednesday. Serve with a crusty bread roll.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~40g protein</span>
+          <span class="pill pill-time">⏱ 5 min reheat</span>
+          <span class="pill pill-cost">💰 ~$4.80</span>
+          <span class="pill pill-method">🍳 Stovetop (Sunday)</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (2 serves)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Beef stir fry strips</span><span class="ing-amount">250g</span></li>
+            <li><span class="ing-name">Kransky sausage</span><span class="ing-amount">150g, sliced</span></li>
+            <li><span class="ing-name">Pickled cucumber (gherkins)</span><span class="ing-amount">2 large, diced</span></li>
+            <li><span class="ing-name">Tomato paste</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Brown onion</span><span class="ing-amount">½, diced</span></li>
+            <li><span class="ing-name">Green olives</span><span class="ing-amount">8–10</span></li>
+            <li><span class="ing-name">Beef stock or water</span><span class="ing-amount">600ml</span></li>
+            <li><span class="ing-name">Lemon juice</span><span class="ing-amount">squeeze</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">dollop, to serve</span></li>
+            <li><span class="ing-name">Crusty bread rolls</span><span class="ing-amount">1 per serve</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=beef+stir+fry+strips" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=beef+stir+fry+strips" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=beef+stir+fry+strips" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday)</p>
+          <ol class="steps-list">
+            <li><strong>Fry beef:</strong> Heat a large pot on high heat. Add beef strips in a single layer — do not stir for 2 minutes, let them get a nice brown crust. Then stir and cook 1 more minute. Remove and set aside.</li>
+            <li><strong>Soften onion:</strong> In the same pot on medium heat, add onion. Cook 3 minutes until soft.</li>
+            <li><strong>Add sausage and paste:</strong> Add sliced kransky and tomato paste. Stir together and cook 2 minutes until the paste darkens slightly — this removes the raw tomato taste.</li>
+            <li><strong>Add everything else:</strong> Add beef strips back in. Add diced pickled cucumber, olives, and stock. Stir well.</li>
+            <li><strong>Simmer:</strong> Bring to a boil, then reduce to a gentle simmer for 15 minutes. The pickled cucumber flavour will infuse through the whole soup. Taste and adjust — add more pickle liquid if you want it tangier.</li>
+            <li><strong>Finish:</strong> Squeeze of lemon juice. Remove from heat. Cool and portion into 2 containers.</li>
+            <li><strong>Wednesday:</strong> Reheat in pot or microwave 4–5 minutes until steaming. Serve in a bowl with a big dollop of sour cream on top and crusty bread roll on the side.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Solyanka is supposed to be sour and salty — that's the whole point. If it tastes too mild, add more pickle juice from the jar. It should have a real tang to it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THURSDAY -->
+<div class="day-section" id="thursday">
+  <div class="day-header">
+    <p class="day-tag">Day 04</p>
+    <h2>Thursday</h2>
+    <div class="day-summary">
+      <span>🔥 ~119g protein total</span>
+      <span>💰 ~$11.80</span>
+      <span>⏱ Stroganoff cooks fresh (15 min)</span>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-breakfast">🌅 Breakfast</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Banana PB Protein Smoothie</h3>
+        <p class="meal-tagline">Banana, peanut butter, honey, protein powder and milk. Pre-bagged Sunday — 45 seconds Thursday morning. Thick, sweet and packed with protein.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~38g protein</span>
+          <span class="pill pill-time">⏱ 45 sec blend</span>
+          <span class="pill pill-cost">💰 ~$1.90</span>
+          <span class="pill pill-method">🥤 Blender</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Banana</span><span class="ing-amount">1 large, frozen</span></li>
+            <li><span class="ing-name">Peanut butter</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Protein powder (vanilla)</span><span class="ing-amount">1 scoop</span></li>
+            <li><span class="ing-name">Honey</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">300ml</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=bananas" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=bananas" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=bananas" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Sunday prep:</strong> Peel banana, break in half, put in ziplock bag with peanut butter. Seal and freeze. Put protein powder + honey in a small container.</li>
+            <li><strong>Thursday morning:</strong> Dump frozen bag into blender. Add milk, protein powder and honey.</li>
+            <li><strong>Blend 45 seconds</strong> on high until smooth. The frozen banana makes it thick and creamy — like a milkshake.</li>
+            <li><strong>Drink up</strong> and go. Rinse blender with water immediately so it doesn't dry.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Frozen banana is the key — it makes the smoothie thick and cold without ice. A fresh banana will give you a thinner, room-temp smoothie.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-lunch">🥙 Lunch</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Pesto Chicken Pasta</h3>
+        <p class="meal-tagline">Sunday airfryer chicken tossed through penne with jarred basil pesto, cherry tomatoes and parmesan. Works hot or cold — throw it together Sunday night and it's done.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~43g protein</span>
+          <span class="pill pill-time">⏱ 2 min microwave or cold</span>
+          <span class="pill pill-cost">💰 ~$4.00</span>
+          <span class="pill pill-method">🌿 Assemble</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Cooked penne pasta</span><span class="ing-amount">120g</span></li>
+            <li><span class="ing-name">Airfryer chicken (Sunday)</span><span class="ing-amount">150g, sliced</span></li>
+            <li><span class="ing-name">Basil pesto (jar)</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Cherry tomatoes</span><span class="ing-amount">6–8, halved</span></li>
+            <li><span class="ing-name">Parmesan</span><span class="ing-amount">1 tbsp grated</span></li>
+            <li><span class="ing-name">Black pepper</span><span class="ing-amount">to taste</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=basil+pesto+jar" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=basil+pesto+jar" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=basil+pesto+jar" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday assemble)</p>
+          <ol class="steps-list">
+            <li><strong>Use Sunday pasta:</strong> Take your portion of cooked Sunday pasta. Make sure it had a tiny bit of olive oil tossed through when it was drained — this stops it clumping.</li>
+            <li><strong>Mix pesto through:</strong> Add 2 tablespoons of pesto to the pasta and toss well until every piece is coated. Pesto is oil-based so it coats easily.</li>
+            <li><strong>Add chicken and tomatoes:</strong> Lay sliced chicken on top. Add halved cherry tomatoes. Sprinkle parmesan and crack of black pepper.</li>
+            <li><strong>Seal container:</strong> Put lid on and refrigerate. This actually gets better overnight as the pesto soaks into the pasta.</li>
+            <li><strong>To eat:</strong> Eat cold (works perfectly), or microwave 2 minutes with lid slightly open. Stir before eating.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> Pesto pasta is one of the few meals that's genuinely better cold — the flavours develop overnight. Try it cold before microwaving.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-dinner">🍽️ Dinner</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Beef Stroganoff with Mash</h3>
+        <p class="meal-tagline">Tender beef strips in a rich garlicky tomato-sour cream sauce served over creamy mashed potato. The most iconic Russian comfort meal — cooked fresh in 15 minutes on Thursday.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~46g protein</span>
+          <span class="pill pill-time">⏱ 15 min fresh cook</span>
+          <span class="pill pill-cost">💰 ~$5.50</span>
+          <span class="pill pill-method">🍳 Stovetop</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients (1 serve)</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Beef stir fry strips</span><span class="ing-amount">200g</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Tomato paste</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Garlic powder</span><span class="ing-amount">½ tsp</span></li>
+            <li><span class="ing-name">Beef stock (or water)</span><span class="ing-amount">100ml</span></li>
+            <li><span class="ing-name">Olive oil</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Potatoes</span><span class="ing-amount">2 medium</span></li>
+            <li><span class="ing-name">Butter</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">splash</span></li>
+            <li><span class="ing-name">Salt & pepper</span><span class="ing-amount">to taste</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=beef+stir+fry+strips" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=beef+stir+fry+strips" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=beef+stir+fry+strips" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (fresh cook Thursday)</p>
+          <ol class="steps-list">
+            <li><strong>Boil potatoes first:</strong> Peel and cube potatoes (roughly 3cm pieces). Put in pot of cold salted water. Bring to boil and cook 12 minutes while you make the stroganoff — they time out perfectly.</li>
+            <li><strong>Sear beef strips:</strong> Heat frypan on high — it needs to be really hot. Add a tiny bit of oil. Add beef strips in a single layer, don't crowd them. Let them sit undisturbed for 90 seconds to get a brown crust. Flip and cook 60 more seconds. Remove and set aside.</li>
+            <li><strong>Make the sauce:</strong> Turn heat to medium. In same pan, add tomato paste and garlic powder. Stir 30 seconds until it darkens slightly. Add stock and stir well, scraping up any browned bits from the bottom — that's flavour.</li>
+            <li><strong>Add sour cream:</strong> Turn heat to low. Add sour cream and stir until the sauce is smooth and creamy. Don't boil after adding sour cream or it may split — keep it on low.</li>
+            <li><strong>Combine:</strong> Add beef strips back into the sauce. Stir gently, cook 2 more minutes on low. Season with salt and pepper.</li>
+            <li><strong>Mash potatoes:</strong> Drain potatoes fully. Mash with butter and a splash of milk until smooth. Season generously with salt.</li>
+            <li><strong>Plate:</strong> Spoon mash into a bowl, ladle stroganoff sauce and beef over the top. Eat immediately.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> The key to stroganoff is searing beef fast on very high heat — don't cook it through, just brown the outside. It finishes gently in the sauce and stays tender, not chewy.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FRIDAY -->
+<div class="day-section" id="friday">
+  <div class="day-header">
+    <p class="day-tag">Day 05</p>
+    <h2>Friday</h2>
+    <div class="day-summary">
+      <span>🔥 ~111g protein total</span>
+      <span>💰 ~$9.60</span>
+      <span>⏱ Jacket potato is hands-off</span>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-breakfast">🌅 Breakfast</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Oats with Berries & Honey</h3>
+        <p class="meal-tagline">The final batch of Sunday oats. Topped with defrosted frozen berries (put them out the night before) and a generous honey drizzle. Easy Friday morning fuel.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~32g protein</span>
+          <span class="pill pill-time">⏱ 90 sec microwave</span>
+          <span class="pill pill-cost">💰 ~$1.80</span>
+          <span class="pill pill-method">🥣 Microwave</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Batch oats (Sunday)</span><span class="ing-amount">1 portion</span></li>
+            <li><span class="ing-name">Frozen berries (thawed)</span><span class="ing-amount">large handful</span></li>
+            <li><span class="ing-name">Honey</span><span class="ing-amount">2 tsp</span></li>
+            <li><span class="ing-name">Milk</span><span class="ing-amount">splash</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=frozen+mixed+berries" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=frozen+mixed+berries" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=frozen+mixed+berries" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Thursday night:</strong> Move a small handful of frozen berries from the freezer to a bowl in the fridge. They'll thaw overnight and release a beautiful purple juice.</li>
+            <li><strong>Friday morning:</strong> Scoop oats into bowl, add a splash of milk, microwave 90 seconds. Stir.</li>
+            <li><strong>Top and eat:</strong> Spoon thawed berries and all their juice over the oats. Drizzle honey generously. Done — happy Friday.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> The berry juice that comes out when they thaw is the best part — it soaks into the oats and turns them pink. Don't waste it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-lunch">🥙 Lunch</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Creamy Tomato Chicken Wrap</h3>
+        <p class="meal-tagline">Sunday airfryer chicken in a quick tomato-sour cream sauce wrapped in flatbread with spinach and capsicum. Light on cream so it's completely fine for lactose sensitivity.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~41g protein</span>
+          <span class="pill pill-time">⏱ 90 sec microwave</span>
+          <span class="pill pill-cost">💰 ~$3.80</span>
+          <span class="pill pill-method">🌯 Assemble</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Flatbread wrap</span><span class="ing-amount">1 large</span></li>
+            <li><span class="ing-name">Airfryer chicken (Sunday)</span><span class="ing-amount">150g, sliced</span></li>
+            <li><span class="ing-name">Tomato paste</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">1 tbsp</span></li>
+            <li><span class="ing-name">Garlic powder</span><span class="ing-amount">pinch</span></li>
+            <li><span class="ing-name">Baby spinach</span><span class="ing-amount">handful</span></li>
+            <li><span class="ing-name">Roasted capsicum</span><span class="ing-amount">3 strips</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=mountain+bread+wraps" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=mountain+bread+wraps" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=mountain+bread+wraps" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method (Sunday assemble)</p>
+          <ol class="steps-list">
+            <li><strong>Make the sauce:</strong> In a small bowl, mix tomato paste, sour cream and a pinch of garlic powder together. It should be pinkish-orange and creamy. This is your spread.</li>
+            <li><strong>Assemble wrap:</strong> Lay flatbread on foil. Spread the tomato-sour cream mix across the centre. Layer spinach, then chicken slices, then capsicum strips.</li>
+            <li><strong>Roll tightly:</strong> Fold sides in, roll from bottom up. Wrap in foil snugly.</li>
+            <li><strong>Store:</strong> Refrigerate. This is one of the best wraps in the plan — the sauce soaks slightly into the chicken overnight.</li>
+            <li><strong>Morning reheat:</strong> Microwave in foil 90 seconds. Check centre is hot. Eat on the way to school if needed.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> The ratio is mostly tomato paste, tiny bit of sour cream — so the creaminess is minimal and totally lactose-friendly. It just adds richness without making it a cream sauce.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label label-dinner">🍽️ Dinner</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Loaded Airfryer Jacket Potato</h3>
+        <p class="meal-tagline">A massive potato cooked in the airfryer until the skin is crispy and the inside is fluffy. Loaded with leftover beef mince, cheddar cheese, sour cream and spring onion. Friday treat — throw it in the airfryer when you get home and it does its thing.</p>
+        <div class="meal-pills">
+          <span class="pill pill-protein">💪 ~38g protein</span>
+          <span class="pill pill-time">⏱ 40 min airfryer (hands-off)</span>
+          <span class="pill pill-cost">💰 ~$4.00</span>
+          <span class="pill pill-method">✈️ Airfryer</span>
+        </div>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Ingredients</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Large brushed potato</span><span class="ing-amount">1 very large (300g+)</span></li>
+            <li><span class="ing-name">Olive oil</span><span class="ing-amount">1 tsp</span></li>
+            <li><span class="ing-name">Coarse salt</span><span class="ing-amount">generous pinch</span></li>
+            <li><span class="ing-name">Leftover beef mince</span><span class="ing-amount">150g (from week)</span></li>
+            <li><span class="ing-name">Cheddar cheese</span><span class="ing-amount">30g, grated</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">2 tbsp</span></li>
+            <li><span class="ing-name">Spring onion</span><span class="ing-amount">2, sliced</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=large+brushed+potatoes" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=large+brushed+potatoes" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=large+brushed+potatoes" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Method</p>
+          <ol class="steps-list">
+            <li><strong>Prep the potato:</strong> Scrub the potato clean. Dry it completely — this is crucial for a crispy skin. Pierce it 8–10 times all over with a fork (so steam can escape).</li>
+            <li><strong>Season the skin:</strong> Rub the entire potato with olive oil so it's lightly coated all over. Then rub with a generous pinch of coarse salt all over the skin. This makes the skin crispy and delicious.</li>
+            <li><strong>Airfryer cook:</strong> Place directly in airfryer basket at 200°C for 40 minutes. No need to flip. Go do something else — it's completely hands-off.</li>
+            <li><strong>Check doneness:</strong> At 40 minutes, squeeze the potato gently with a cloth — it should feel very soft. Pierce with a knife — it should slide in with zero resistance. If not, give it 5 more minutes.</li>
+            <li><strong>Heat the mince:</strong> While potato has 5 minutes left, heat your leftover beef mince in a small pan on medium, 3–4 minutes. Or microwave 2 minutes.</li>
+            <li><strong>Load it up:</strong> Cut the potato in half lengthways. Gently fluff the inside with a fork. Load with beef mince, then grated cheese (let it melt on the hot potato), then sour cream, then spring onion. Eat immediately.</li>
+          </ol>
+          <div class="tip-box"><strong>💡 Tip:</strong> The biggest mistake with jacket potatoes is not getting them big enough. You want a potato that barely fits in your airfryer — the bigger the better. Small potatoes go dry.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUNDAY PREP -->
+<div class="day-section" id="sunday">
+  <div class="day-header">
+    <p class="day-tag">Before the week</p>
+    <h2>Sunday Prep<br>Master Plan</h2>
+    <div class="day-summary">
+      <span>⏱ Under 55 minutes total</span>
+      <span>💰 One shop, whole week</span>
+      <span>✅ Do this once, eat all week</span>
+    </div>
+  </div>
+
+  <div class="sunday-section">
+    <h3>The 55-Minute Sunday Game Plan</h3>
+    <p>Do everything in this exact order — things run simultaneously so nothing waits on anything else.</p>
+    <ul class="sunday-steps">
+      <li><span class="sunday-num">1</span>Preheat airfryer to 200°C (3 min). While it heats, season 4 chicken breasts with oil, garlic powder, salt and pepper.</li>
+      <li><span class="sunday-num">2</span>Put chicken in airfryer at 200°C — set timer for 18 min. Walk away.</li>
+      <li><span class="sunday-num">3</span>While chicken cooks: put rice (400g) + water (640ml) on stove, bring to boil then lowest heat, lid on, 12 min.</li>
+      <li><span class="sunday-num">4</span>While rice and chicken cook: make oat batch on stove (5 min), set aside to cool.</li>
+      <li><span class="sunday-num">5</span>Flip chicken at 9-minute mark. Check rice at 12 min — remove from heat, lid stays on.</li>
+      <li><span class="sunday-num">6</span>Boil pasta (10 min) while chicken finishes. Drain pasta, toss with tiny bit of olive oil.</li>
+      <li><span class="sunday-num">7</span>Remove chicken. Rest 5 min. Make kotlety mix — shape patties, wrap and refrigerate raw.</li>
+      <li><span class="sunday-num">8</span>Brown beef mince (two batches — bolognese sauce in pot, Mexican mince in frypan). 8 min each.</li>
+      <li><span class="sunday-num">9</span>Make solyanka soup in a large pot. 20 min including simmer — can overlap with mince cooking.</li>
+      <li><span class="sunday-num">10</span>Assemble all containers: rice bowls, pasta, wraps. Pre-bag smoothie ingredients into freezer bags.</li>
+    </ul>
+  </div>
+
+  <div class="meal-block">
+    <div class="meal-type-label" style="background:#FFF3E0;color:#7A3A00;">🛒 Full Shopping List</div>
+    <div class="meal-card">
+      <div class="meal-card-top">
+        <h3 class="meal-title">Everything you need — compare all three stores</h3>
+        <p class="meal-tagline">Estimated total: $42–47 depending on what's on special. Buy the biggest packs of chicken and beef mince — cheaper per 100g.</p>
+      </div>
+      <div class="recipe-body">
+        <div class="ingredients-col">
+          <p class="col-heading">Proteins</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Chicken breast</span><span class="ing-amount">~750g (4 breasts)</span></li>
+            <li><span class="ing-name">Beef mince</span><span class="ing-amount">~900g total</span></li>
+            <li><span class="ing-name">Beef stir fry strips</span><span class="ing-amount">~450g</span></li>
+            <li><span class="ing-name">Kransky sausage</span><span class="ing-amount">1 pack (~200g)</span></li>
+            <li><span class="ing-name">Protein powder</span><span class="ing-amount">already have or buy</span></li>
+          </ul>
+          <p class="col-heading" style="margin-top:1rem;">Carbs</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Jasmine rice</span><span class="ing-amount">1kg bag</span></li>
+            <li><span class="ing-name">Penne pasta</span><span class="ing-amount">500g pack</span></li>
+            <li><span class="ing-name">Rolled oats</span><span class="ing-amount">500g</span></li>
+            <li><span class="ing-name">Mountain bread wraps</span><span class="ing-amount">1 pack</span></li>
+            <li><span class="ing-name">Bread rolls</span><span class="ing-amount">4 pack</span></li>
+            <li><span class="ing-name">Large brushed potatoes</span><span class="ing-amount">1.5kg bag</span></li>
+            <li><span class="ing-name">Breadcrumbs</span><span class="ing-amount">small pack</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=jasmine+rice" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=jasmine+rice" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=jasmine+rice" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+        <div class="steps-col">
+          <p class="col-heading">Dairy & Fridge</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Full cream milk</span><span class="ing-amount">2L</span></li>
+            <li><span class="ing-name">Sour cream</span><span class="ing-amount">200g tub</span></li>
+            <li><span class="ing-name">Butter</span><span class="ing-amount">small block</span></li>
+            <li><span class="ing-name">Cheddar cheese</span><span class="ing-amount">block or grated</span></li>
+            <li><span class="ing-name">Parmesan (optional)</span><span class="ing-amount">small pack</span></li>
+          </ul>
+          <p class="col-heading" style="margin-top:1rem;">Pantry & Fridge</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Diced tomatoes (canned)</span><span class="ing-amount">2 cans</span></li>
+            <li><span class="ing-name">Tomato paste (tube)</span><span class="ing-amount">1 tube</span></li>
+            <li><span class="ing-name">Basil pesto (jar)</span><span class="ing-amount">1 jar</span></li>
+            <li><span class="ing-name">Hummus</span><span class="ing-amount">1 tub</span></li>
+            <li><span class="ing-name">Roasted capsicum (jar)</span><span class="ing-amount">1 jar</span></li>
+            <li><span class="ing-name">Canned corn kernels</span><span class="ing-amount">1 can</span></li>
+            <li><span class="ing-name">Green olives</span><span class="ing-amount">small jar</span></li>
+            <li><span class="ing-name">Gherkins / pickled cucumbers</span><span class="ing-amount">1 jar</span></li>
+            <li><span class="ing-name">Peanut butter</span><span class="ing-amount">1 jar</span></li>
+            <li><span class="ing-name">Honey (squeeze bottle)</span><span class="ing-amount">1 bottle</span></li>
+            <li><span class="ing-name">Soy sauce</span><span class="ing-amount">1 bottle</span></li>
+            <li><span class="ing-name">Taco seasoning</span><span class="ing-amount">1 packet</span></li>
+            <li><span class="ing-name">Beef stock (liquid or cubes)</span><span class="ing-amount">700ml</span></li>
+          </ul>
+          <p class="col-heading" style="margin-top:1rem;">Fresh Produce</p>
+          <ul class="ingredient-list">
+            <li><span class="ing-name">Bananas</span><span class="ing-amount">1 bunch (5+)</span></li>
+            <li><span class="ing-name">Frozen mixed berries</span><span class="ing-amount">500g bag</span></li>
+            <li><span class="ing-name">Cherry tomatoes</span><span class="ing-amount">1 punnet</span></li>
+            <li><span class="ing-name">Brown onions</span><span class="ing-amount">2</span></li>
+            <li><span class="ing-name">Garlic</span><span class="ing-amount">1 bulb</span></li>
+            <li><span class="ing-name">Baby spinach</span><span class="ing-amount">1 bag</span></li>
+            <li><span class="ing-name">Cucumber</span><span class="ing-amount">1</span></li>
+            <li><span class="ing-name">Carrots</span><span class="ing-amount">2</span></li>
+            <li><span class="ing-name">Spring onions</span><span class="ing-amount">1 bunch</span></li>
+            <li><span class="ing-name">Lime</span><span class="ing-amount">1</span></li>
+            <li><span class="ing-name">Lemon</span><span class="ing-amount">1</span></li>
+          </ul>
+          <div class="store-links">
+          <span class="store-label">🛒 Compare prices:</span>
+          <a class="store-btn btn-coles" href="https://www.coles.com.au/search?q=grocery" target="_blank">Coles ↗</a>
+          <a class="store-btn btn-woolworths" href="https://www.woolworths.com.au/shop/search/products?searchTerm=grocery" target="_blank">Woolworths ↗</a>
+          <a class="store-btn btn-aldi" href="https://www.aldi.com.au/en/search/?text=grocery" target="_blank">ALDI ↗</a>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <p>Built for a 15-year-old athlete who loves Russian food, Mediterranean flavours, and gains. 🔥<br>
+  Every recipe tested to be airfryer or stovetop — under 1 hour Sunday prep total.</p>
+  <p style="margin-top:1rem;">Made with <span>♥</span> and Claude</p>
+</footer>
+
+<script>
+function showDay(day) {
+  document.querySelectorAll('.day-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(day).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({ top: document.querySelector('nav').offsetTop - 10, behavior: 'smooth' });
+  setTimeout(() => {
+    document.querySelectorAll('.meal-block').forEach((b, i) => {
+      setTimeout(() => b.classList.add('visible'), i * 120);
+    });
+  }, 100);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.meal-block').forEach((b, i) => {
+    setTimeout(() => b.classList.add('visible'), 200 + i * 150);
+  });
+});
+</script>
+</body>
+</html>
